@@ -39,49 +39,72 @@
 
     <script>
       //var running = false;
-      //gravity simulation
-      var floor = 1000; //the bounce spot?
+      //gravity simulation.  v=gt in m/s.  so for given ticks, the velocity changes.  then the vertical increment changes
+      //
+      var floor = 478; //the bounce spot?
       var ball_El = document.getElementById("ball_img");
       const start_x = 100;
       const start_y = 100;
       var x = start_x;
       var y = start_y;
-      var v_y=0;              //velocity starts at zero
-      const earth_g=9.8;    //earth G
-      var t=0;              //time
-      var increment=1;      //the amount to change per tick.
+      var math_y=1000;
+      var v_y = 0; //velocity starts at zero
+      const earth_g = 9.8/100; //earth G  divide this by 100 to make it look right.  or there is a relationship betwen the tick time...
+      var t = 0; //time
+      var increment = 1; //the amount to change per tick.
+
       //var pos = 0;
       var timer;
       draw(x, y);
 
       $(".start_button").on("click", function() {
-        x = start_x;
-        y = start_y;
+        reset();
         draw(start_x, start_y);
-
-        timer = setInterval(frame, 5);
+        clearInterval(timer);
+        timer = setInterval(frame, 10);
       });
 
       $(".reset_button").on("click", function() {
-        x = start_x;
-        y = start_y;
+        reset();
         draw(start_x, start_y);
         clearInterval(timer);
       });
 
       function frame() {
-        if (y == 478) {
-          clearInterval(timer);
+        if (y > floor) {
+          //clearInterval(timer);
+          v_y = v_y * -1;
         } else {
-          x++;              //sideways vector isn't affected by gravity
-          y=y+increment;
-          draw(x, y);
+          if (x>1000){
+            reset();
+            draw(start_x, start_y);
+          clearInterval(timer);
+          }
+          
         }
+          t++; //time advances
+          v_y = earth_g +v_y; //m/s
+          console.log("v is " + v_y);
+          console.log("x is " + x);
+          //console.log("y is " + y);
+          console.log("y is " + math_y);
+          x++; //sideways vector isn't affected by gravity
+          y = y + v_y;
+          math_y=math_y-v_y;
+          draw(x, y);
       }
 
       function draw(x, y) {
         ball_El.style.top = y + "px";
-        //ball_El.style.left = x + "px";
+        ball_El.style.left = x + "px";
+      }
+
+      function reset() {
+        console.log("================================");
+        x = start_x;
+        y = start_y;
+        v_y = 0;
+        t = 0;
       }
     </script>
   </body>
