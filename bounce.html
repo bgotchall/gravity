@@ -17,12 +17,39 @@
 
     <!-- JQuery -->
     <script src="https://code.jquery.com/jquery.js"></script>
+
+    <style>
+      #gravity_select {
+        width: 250px;
+        display:inline-block;
+      }
+      .btn {
+        margin-right:20px;
+      }
+    </style>
   </head>
   <body>
     <div class="container" style="position:relative">
       <h1>Click to start</h1>
-      <button type="button" class="btn btn-primary start_button">Start</button>
-      <button type="button" class="btn btn-primary reset_button">Reset</button>
+      <div class="form-group">
+        <button type="button" class="btn btn-primary start_button">
+          Start
+        </button>
+        <button type="button" class="btn btn-primary reset_button">
+          Reset
+        </button>
+
+        <label for="exampleFormControlSelect1">Select Gravity</label>
+        <select class="form-control" id="gravity_select">
+          <option planet="Earth">Earth 9.8m/s^2</option>
+          <option planet="Moon">Moon 1.6m/s^2</option>
+          <option planet="Jupiter">Jupiter 25.95m/s^2</option>
+          <option planet="Sun">Sun 274.13m/s^2</option>
+          <option planet="Mars">Mars 3.77m/s^2</option>
+          <option planet="Neutron Star">Neutron Star 10000000m/s^2</option>
+          <option planet="Pluto">Pluto 0.42/s^2</option>
+        </select>
+      </div>
       <img
         src="ball.png"
         alt=""
@@ -43,18 +70,60 @@
       //
       var floor = 478; //the bounce spot?
       var ball_El = document.getElementById("ball_img");
+      var selector_El = document.getElementById("gravity_select");
+      var timer;
+
       const start_x = 100;
       const start_y = 100;
       var x = start_x;
       var y = start_y;
-      var math_y=1000;
-      var v_y = 0; //velocity starts at zero
-      const earth_g = 9.8/100; //earth G  divide this by 100 to make it look right.  or there is a relationship betwen the tick time...
-      var t = 0; //time
-      var increment = 1; //the amount to change per tick.
+      var math_y = 1000;
+      var v_y = 0;         //velocity y direction,  starts at zero
+      var v_x = 1;         //velocity x direction
+      var g;               //gravity in m/s^2
+      var t = 0;           //time
+      const friction_coeff = 0.9; //how much velocity is retained on a bounce.
+      var selected_planet;
+      const tick_constant=10;    //divide accelerations by this and use it for the tick timer
 
-      //var pos = 0;
-      var timer;
+      var planets = [
+        {
+          planet: "Earth",
+          gravity: 9.81
+        },
+        {
+          planet: "Moon",
+          gravity: 1.62
+        },
+        {
+          planet: "Jupiter",
+          gravity: 25.95
+        },
+        {
+          planet: "Sun",
+          gravity: 274.13
+        },
+        {
+          planet: "Mars",
+          gravity: 3.77
+        },
+        {
+          planet: "Neutron star",
+          gravity: 10000000
+        },
+        {
+          planet: "Pluto",
+          gravity: 0.42
+        }
+      ];
+      
+      
+      selected_planet = selector_El.options[ selector_El.selectedIndex ].getAttribute("Planet");
+      console.log(selected_planet);
+     
+      g = planets[selector_El.selectedIndex].gravity;
+      g=g/tick_constant;      //since I am doing 100ms per tick
+      
       draw(x, y);
 
       $(".start_button").on("click", function() {
@@ -73,25 +142,27 @@
       function frame() {
         if (y > floor) {
           //clearInterval(timer);
-          v_y = v_y * -1;
-        } else {
-          if (x>1000){
-            reset();
-            draw(start_x, start_y);
+          y = floor;
+          v_y = v_y * -1 * friction_coeff;
+          v_x = v_x * friction_coeff;
+        } else if (x > 1000) {
+          reset();
+          draw(start_x, start_y);
           clearInterval(timer);
-          }
-          
+        } else if (v_x <= 0) {
+          v_y=0;
+          clearInterval(timer);
         }
-          t++; //time advances
-          v_y = earth_g +v_y; //m/s
-          console.log("v is " + v_y);
-          console.log("x is " + x);
-          //console.log("y is " + y);
-          console.log("y is " + math_y);
-          x++; //sideways vector isn't affected by gravity
-          y = y + v_y;
-          math_y=math_y-v_y;
-          draw(x, y);
+        t++; //time advances
+        v_y = g + v_y; //m/s
+        console.log("v is " + v_y);
+        console.log("x is " + x);
+        //console.log("y is " + y);
+        console.log("y is " + y);
+        x = x + v_x; //sideways vector isn't affected by gravity
+        y = y + v_y;
+        math_y = math_y - v_y;
+        draw(x, y);
       }
 
       function draw(x, y) {
@@ -105,7 +176,15 @@
         y = start_y;
         v_y = 0;
         t = 0;
+        v_x = 1;
       }
+
+      $("#gravity_select").on("change", function(){
+        g = planets[selector_El.selectedIndex].gravity;
+        g=g/tick_constant;      //since I am doing 100ms per tick
+        console.log(g);
+
+      });
     </script>
   </body>
 </html>
